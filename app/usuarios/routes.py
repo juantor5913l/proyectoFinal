@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, flash,request
-from flask_login import login_user, login_required, logout_user, current_user
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import login_user, login_required, logout_user, current_user
 
@@ -73,7 +73,7 @@ def dashboard():
         return "Rol no válido para el dashboard"
     
     
-    
+'''
 @usuario_blueprint.route('/perfil/<int:id>', methods=['GET', 'POST'])
 @login_required
 def perfil(id):
@@ -88,5 +88,42 @@ def perfil(id):
           
         app.db.session.commit()
         
-        return render_template('perfil.html',usuario=actualizar_usuario )
+        return render_template('perfil.html',usuario=actualizar_usuario )'''
+def actualizar_perfil(usuario_id, nombre, apellido, correo, direccion,contrasena):
+    # Buscar el usuario por su ID
+    usuario = app.models.Usuario.query.get(usuario_id)
+
+    if usuario:
+        # Actualizar los campos del perfil
+        usuario.nombre = nombre
+        usuario.apellido = apellido
+        usuario.correo_electronico = correo
+        usuario.direccion = direccion
+        usuario.contrasena = contrasena
+        # Guardar los cambios en la base de datos
+        app.db.session.commit()
+        return True, "Perfil actualizado exitosamente."
+    else:
+        return False, "Usuario no encontrado."
+
     
+@usuario_blueprint.route('/perfil/<int:usuario_id>', methods=['GET', 'POST'])
+def perfil(usuario_id):
+    usuario = app.models.Usuario.query.get(usuario_id)
+
+    if request.method == 'POST':
+        nuevo_nombre = request.form['nombre']
+        nuevo_apellido = request.form['apellido']
+        nuevo_correo = request.form['correo']
+        nueva_direccion = request.form['direccion']
+        nueva_contrasena = request.form['contrasena']
+
+        resultado, mensaje = actualizar_perfil(usuario_id, nuevo_nombre, nuevo_apellido, nuevo_correo, nueva_direccion, nueva_contrasena)
+
+        if resultado:
+            return "Informacion actualizada correctamente"
+            return redirect(url_for('usuario_blueprint.perfil', usuario_id=usuario_id))
+        else:
+            return "error"
+
+    return render_template('perfil.html', usuario=usuario)
